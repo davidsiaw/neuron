@@ -76,6 +76,7 @@
       <DependentUpon>Neurone.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
+    <Compile Include="ProgramStateFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Training.cs" />
     <Compile Include="ViewMatrix.cs">

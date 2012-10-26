@@ -38,6 +38,17 @@ namespace Neuron {
 			return n;
 		}
 
+        public static Matrix RemoveBiasTerm(Matrix x)
+        {
+            Matrix n = new Matrix(x.RowCount - 1, 1);
+            n[0, 0] = 1;
+            for (int i = 1; i < x.RowCount; i++)
+            {
+                n[i - 1, 0] = x[i, 0];
+            }
+            return n;
+        }
+
 		public static Matrix ForwardPropLayer(IPerceptronFunc outputfunc, Matrix x, Matrix w) {
 			var z = w * x;
 			return outputfunc.Func(z);

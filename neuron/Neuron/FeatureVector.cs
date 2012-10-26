@@ -46,6 +46,7 @@ namespace Neuron
         }
 	}
 
+
 	public class WeightMatrix {
 
         public WeightMatrix(int inputs, int outputs)

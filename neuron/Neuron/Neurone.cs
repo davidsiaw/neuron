@@ -13,6 +13,7 @@ using BlueBlocksLib.BaseClasses;
 using BlueBlocksLib.SetUtils;
 using BlueBlocksLib.FileAccess;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace Neuron
 {
@@ -239,20 +240,195 @@ namespace Neuron
             return flp;
         }
 
-
         Set<GraphMap<FeatureVector, WeightMatrix>.Box> outputs = new Set<GraphMap<FeatureVector, WeightMatrix>.Box>();
         Set<GraphMap<FeatureVector, WeightMatrix>.Box> hiddens = new Set<GraphMap<FeatureVector, WeightMatrix>.Box>();
         Set<GraphMap<FeatureVector, WeightMatrix>.Box> inputs = new Set<GraphMap<FeatureVector, WeightMatrix>.Box>();
 
 		private void btn_train_Click(object sender, EventArgs e) {
 
-            //BinaryMap bm = new BinaryMap();
-            //bm.ShowDialog();
+            OneToManyMap<GraphMap<FeatureVector, WeightMatrix>.ILinkable, Pair<GraphMap<FeatureVector, WeightMatrix>.ILinkable, GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>>> backwards;
+            Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable> inputVectors;
+            Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable> outputVectors;
+            GetGraphOrder(out backwards, out inputVectors, out outputVectors);
 
+            List<Dictionary<string, FeatureVector>> trainingData = new List<Dictionary<string, FeatureVector>>();
 
-			// move forward thru the graph and build a backwards graph for backprop
+            // Get training data
+            foreach (DataGridViewRow row in data_training.Rows)
+            {
+                string config = row.Cells[2].Value.ToString();
+                trainingData.Add(StateFromConfiguration(config).ToDictionary(x => x.name));
+            }
+
+            int iterationCounter = 0;
+
+            // begin training...
+            while (true)
+            {
+                double squaredTrainingError = 0;
+                int totalTrainingNeuronCount = 0;
+
+                // Matrix weight gradients
+                Dictionary<GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>, Matrix> dw = new Dictionary<GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>, Matrix>();
+
+                foreach (var trainingCase in trainingData)
+                {
+                    double perTrainingSquaredError = 0;
+                    int perTrainingNeuronCount = 0;
+
+                    // errors in all input vectors
+                    Dictionary<string, Matrix> dy = new Dictionary<string, Matrix>();
+
+                    foreach (var inputVector in inputVectors)
+                    {
+                        foreach (var edge in inputVector.Edges)
+                        {
+                            // make space to store the weight gradients
+                            dw[edge.Value] = new Matrix(edge.Value.Data.weights.RowCount, edge.Value.Data.weights.ColumnCount);
+                        }
+                    }
+
+                    // set all feature vectors to a training case
+                    foreach (var feature in trainingCase)
+                    {
+                        vectors[feature.Key].Data.state = feature.Value.state;
+                    }
+
+                    // forward prop
+                    foreach (var outputVector in outputVectors)
+                    {
+                        var sources = backwards[outputVector];
+                        outputVector.Data.state = new Matrix(outputVector.Data.state.RowCount, outputVector.Data.state.ColumnCount);
+                        foreach (var source in sources)
+                        {
+                            var x = Training.AddBiasTerm(source.a.Data.state);
+                            outputVector.Data.state += (source.b.Data.weights * x);
+                        }
+                        outputVector.Data.state = outputVector.Data.type.Func(outputVector.Data.state);
+                    }
+
+                    // Calculate errors
+                    foreach (var output in outputs)
+                    {
+                        dy[output.Data.name] = trainingCase[output.Data.name].state - output.Data.state;
+                        for (int i = 0; i < output.Data.state.RowCount; i++)
+                        {
+                            double error = output.Data.state[i, 0];
+                            perTrainingSquaredError += error * error;
+                            perTrainingNeuronCount++;
+                        }
+                    }
+
+                    squaredTrainingError += perTrainingSquaredError;
+                    totalTrainingNeuronCount += perTrainingNeuronCount;
+
+                    // Establish space for the input vectors
+                    foreach (var inputVec in inputVectors)
+                    {
+                        dy[inputVec.Data.name] = new Matrix(inputVec.Data.state.RowCount, inputVec.Data.state.ColumnCount);
+                    }
+
+                    // backprop and add to weight gradients
+                    foreach (var inputVec in inputVectors)
+                    {
+                        foreach (var edge in inputVec.Edges)
+                        {
+                            Matrix dHidden;
+                            Matrix dWeights;
+                            var x = Training.AddBiasTerm(inputVec.Data.state);
+                            Training.BackpropLayer(dy[edge.Key.Data.name], x, edge.Value.Data.weights, edge.Key.Data.type, out dHidden, out dWeights);
+                            dy[inputVec.Data.name] += Training.RemoveBiasTerm(dHidden);
+                            dw[edge.Value] -= dWeights;
+                        }
+                    }
+                }
+
+                double averager = 1.0 / trainingData.Count;
+                double learningrate = 1;
+
+                // update weights
+                foreach (var inputVec in inputVectors)
+                {
+                    foreach (var edge in inputVec.Edges)
+                    {
+                        edge.Value.Data.weights = (edge.Value.Data.weights + dw[edge.Value] * averager * learningrate);
+                    }
+                }
+
+                // calculate total error
+                double totalError = Math.Sqrt(squaredTrainingError) / totalTrainingNeuronCount;
+                Debug.WriteLine(totalError);
+
+                iterationCounter++;
+
+                // repeat until stopped
+                if (iterationCounter == 100)
+                {
+                    break;
+                }
+            }
 
 		}
+
+        private void GetGraphOrder(out OneToManyMap<GraphMap<FeatureVector, WeightMatrix>.ILinkable, Pair<GraphMap<FeatureVector, WeightMatrix>.ILinkable, GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>>> backwards, out Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable> inputVectors, out Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable> outputVectors)
+        {
+            backwards = new OneToManyMap<GraphMap<FeatureVector, WeightMatrix>.ILinkable, Pair<GraphMap<FeatureVector, WeightMatrix>.ILinkable, GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>>>();
+
+            // Just to keep track of the frontier
+            Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable> queue = new Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable>();
+
+            // To keep track of the order each output should be evaluated
+            Dictionary<GraphMap<FeatureVector, WeightMatrix>.ILinkable, int> outputPriorities = new Dictionary<GraphMap<FeatureVector, WeightMatrix>.ILinkable, int>();
+
+            Dictionary<GraphMap<FeatureVector, WeightMatrix>.ILinkable, int> inputPriorities = new Dictionary<GraphMap<FeatureVector, WeightMatrix>.ILinkable, int>();
+
+            foreach (var input in inputs)
+            {
+                queue.Enqueue(input);
+            }
+
+            int outPriority = 0;
+            while (queue.Count != 0)
+            {
+                var node = queue.Dequeue();
+                foreach (var edge in node.Edges)
+                {
+
+                    // add next node to the frontier
+                    queue.Enqueue(edge.Key);
+
+                    // put this node in the set of outputs
+                    outputPriorities[edge.Key] = outPriority++;
+
+                    backwards.Add(edge.Key, new Pair<GraphMap<FeatureVector, WeightMatrix>.ILinkable, GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>>()
+                    {
+                        a = node,
+                        b = edge.Value
+                    });
+                }
+            }
+
+            // Vectors that receive outputs
+            outputVectors = new Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable>();
+
+            // Vectors that are inputs
+            inputVectors = new Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable>();
+
+            int inPriority = 0;
+            foreach (var outputPriority in outputPriorities.OrderBy(x => x.Value))
+            {
+                outputVectors.Enqueue(outputPriority.Key);
+                foreach (var input in backwards[outputPriority.Key])
+                {
+                    inputPriorities[input.a] = inPriority++;
+                }
+            }
+
+            foreach (var inputPriority in inputPriorities.OrderByDescending(x => x.Value))
+            {
+                inputVectors.Enqueue(inputPriority.Key);
+            }
+        }
 
         private void btn_forwardProp_Click(object sender, EventArgs e)
         {
@@ -261,34 +437,10 @@ namespace Neuron
                 return;
             }
 
-            OneToManyMap<GraphMap<FeatureVector, WeightMatrix>.ILinkable, Pair<GraphMap<FeatureVector, WeightMatrix>.ILinkable, GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>>> backwards =
-                new OneToManyMap<GraphMap<FeatureVector, WeightMatrix>.ILinkable, Pair<GraphMap<FeatureVector, WeightMatrix>.ILinkable, GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>>>();
-
-            // Just to keep track of the frontier
-            Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable> queue = new Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable>();
-
-            // Vectors that receive outputs
-            Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable> outputVectors = new Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable>();
-
-            foreach (var input in inputs)
-            {
-                queue.Enqueue(input);
-            }
-
-            while (queue.Count != 0)
-            {
-                var node = queue.Dequeue();
-                foreach (var edge in node.Edges)
-                {
-                    queue.Enqueue(edge.Key);
-                    outputVectors.Enqueue(edge.Key);
-                    backwards.Add(edge.Key, new Pair<GraphMap<FeatureVector, WeightMatrix>.ILinkable, GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>>()
-                    {
-                        a = node,
-                        b = edge.Value
-                    });
-                }
-            }
+            OneToManyMap<GraphMap<FeatureVector, WeightMatrix>.ILinkable, Pair<GraphMap<FeatureVector, WeightMatrix>.ILinkable, GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>>> backwards;
+            Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable> _;
+            Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable> outputVectors;
+            GetGraphOrder(out backwards, out _, out outputVectors);
 
             while (outputVectors.Count != 0)
             {
@@ -343,6 +495,30 @@ namespace Neuron
                 );
             AddToConfiguration(configString);
         }
+        
+        static FeatureVector[] StateFromConfiguration(string config)
+        {
+            var configs = config.Split(';');
+            FeatureVector[] res = new FeatureVector[configs.Length];
+
+            for (int i = 0; i < res.Length; i++)
+            {
+                var toks = configs[i].Split('=');
+                var name = toks[0];
+                var values = toks[1].Split(',').Select(x => double.Parse(x)).ToArray();
+
+                res[i] = new FeatureVector();
+                res[i].name = name;
+                res[i].state = new Matrix(values.Length, 1);
+
+                for (int c = 0; c < values.Length; c++)
+                {
+                    res[i].state[c, 0] = values[c];
+                }
+            }
+
+            return res;
+        }
 
         private void AddToConfiguration(string configString)
         {
@@ -362,13 +538,17 @@ namespace Neuron
 
         private void data_configurations_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+            if (data_configurations.Rows.Count <= e.RowIndex)
+            {
+                return;
+            }
+
             if ((string)data_configurations[e.ColumnIndex, e.RowIndex].Value == "Move To Train")
             {
                 AddToTraining(data_configurations[2, e.RowIndex].Value.ToString());
                 data_configurations.Rows.RemoveAt(e.RowIndex);
             }
-
-            if ((string)data_configurations[e.ColumnIndex, e.RowIndex].Value == "Move To CrsVld")
+            else if ((string)data_configurations[e.ColumnIndex, e.RowIndex].Value == "Move To CrsVld")
             {
                 AddToCrossValidation(data_configurations[2, e.RowIndex].Value.ToString());
                 data_configurations.Rows.RemoveAt(e.RowIndex);
@@ -378,13 +558,17 @@ namespace Neuron
 
         private void data_training_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+            if (data_training.Rows.Count <= e.RowIndex)
+            {
+                return;
+            }
+
             if ((string)data_training[e.ColumnIndex, e.RowIndex].Value == "Move To Data")
             {
                 AddToConfiguration(data_training[2, e.RowIndex].Value.ToString());
                 data_training.Rows.RemoveAt(e.RowIndex);
             }
-
-            if ((string)data_training[e.ColumnIndex, e.RowIndex].Value == "Move To CrsVld")
+            else if ((string)data_training[e.ColumnIndex, e.RowIndex].Value == "Move To CrsVld")
             {
                 AddToCrossValidation(data_training[2, e.RowIndex].Value.ToString());
                 data_training.Rows.RemoveAt(e.RowIndex);
@@ -394,136 +578,23 @@ namespace Neuron
 
         private void data_crossValidationData_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+            if (data_crossValidationData.Rows.Count <= e.RowIndex)
+            {
+                return;
+            }
+
             if ((string)data_crossValidationData[e.ColumnIndex, e.RowIndex].Value == "Move To Train")
             {
                 AddToTraining(data_crossValidationData[2, e.RowIndex].Value.ToString());
                 data_crossValidationData.Rows.RemoveAt(e.RowIndex);
             }
-
-            if ((string)data_crossValidationData[e.ColumnIndex, e.RowIndex].Value == "Move To Data")
+            else if ((string)data_crossValidationData[e.ColumnIndex, e.RowIndex].Value == "Move To Data")
             {
                 AddToConfiguration(data_crossValidationData[2, e.RowIndex].Value.ToString());
                 data_crossValidationData.Rows.RemoveAt(e.RowIndex);
             }
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        struct ProgramStateFile
-        {
-            public int version;
-            public int numNodes;
-            public int numConfigurations;
-            public int numTrainings;
-            public int numCrossValidations;
-
-            [ArraySize("numNodes")]
-            public Node[] nodes;
-
-            [ArraySize("numConfigurations")]
-            public StringData[] configurations;
-
-            [ArraySize("numTrainings")]
-            public StringData[] trainings;
-
-            [ArraySize("numCrossValidations")]
-            public StringData[] crossValidations;
-
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        struct Link
-        {
-            public MatrixFormat matrix;
-            public StringData nodename;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        struct MatrixFormat
-        {
-            public MatrixFormat(double [,] matrix)
-            {
-                rows = new MatrixRow[matrix.GetLength(1)];
-                numRows = rows.Length;
-                numColumns = matrix.GetLength(0);
-                for (int y = 0; y < numRows; y++)
-                {
-                    rows[y].cols = new double[numColumns];
-                    rows[y].numColumns = numColumns;
-                    for (int x = 0; x < numColumns; x++)
-                    {
-                        rows[y].cols[x] = matrix[x, y];
-                    }
-                }
-            }
-
-            public double[,] Matrix
-            {
-                get
-                {
-                    double[,] res = new double[numColumns, numRows];
-
-                    for (int y = 0; y < res.GetLength(1); y++)
-                    {
-                        for (int x = 0; x < res.GetLength(0); x++)
-                        {
-                            res[x, y] = rows[y].cols[x];
-                        }
-                    }
-
-                    return res;
-                }
-            }
-
-            public int numColumns, numRows;
-
-            [ArraySize("numRows")]
-            public MatrixRow[] rows;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        struct MatrixRow
-        {
-            public int numColumns;
-
-            [ArraySize("numColumns")]
-            public double[] cols;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        struct Node
-        {
-            public int x, y;
-            public int size;
-            public StringData name;
-            public FeatureVectorType type;
-
-            public int numlinks;
-
-            [ArraySize("numlinks")]
-            public Link[] links;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        struct StringData
-        {
-            public int stringlen;
-
-            [ArraySize("stringlen")]
-            public byte[] bytes;
-
-            public string Contents
-            {
-                get
-                {
-                    return Encoding.UTF8.GetString(bytes);
-                }
-                set
-                {
-                    bytes = Encoding.UTF8.GetBytes(value);
-                    stringlen = bytes.Length;
-                }
-            }
-        }
 
         private void btn_Save_Click(object sender, EventArgs e)
         {
