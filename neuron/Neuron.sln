@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Neuron", "Neuron\Neuron.csproj", "{B539A5DD-889D-4282-BACA-BD07383699F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNumerics VS2008", "..\DotNumerics\DotNumerics VS2008.csproj", "{48185EF1-B73B-457B-AA37-0BCE567C5AB1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlueBlocksLib", "..\BlueBlocks\BlueBlocksLib\BlueBlocksLib.csproj", "{3E610D1E-838A-4EAB-80AE-CA4E78C2D83A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B539A5DD-889D-4282-BACA-BD07383699F9}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{B539A5DD-889D-4282-BACA-BD07383699F9}.Debug|Any CPU.Build.0 = Debug|x86
+		{B539A5DD-889D-4282-BACA-BD07383699F9}.Release|Any CPU.ActiveCfg = Release|x86
+		{48185EF1-B73B-457B-AA37-0BCE567C5AB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48185EF1-B73B-457B-AA37-0BCE567C5AB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48185EF1-B73B-457B-AA37-0BCE567C5AB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48185EF1-B73B-457B-AA37-0BCE567C5AB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E610D1E-838A-4EAB-80AE-CA4E78C2D83A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E610D1E-838A-4EAB-80AE-CA4E78C2D83A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E610D1E-838A-4EAB-80AE-CA4E78C2D83A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E610D1E-838A-4EAB-80AE-CA4E78C2D83A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{3E610D1E-838A-4EAB-80AE-CA4E78C2D83A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BlueBlocksLib</RootNamespace>
+    <AssemblyName>BlueBlocksLib</AssemblyName>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AsyncComms\Agent.cs" />
+    <Compile Include="AsyncComms\IChannel.cs" />
+    <Compile Include="AsyncComms\MessageQueue.cs" />
+    <Compile Include="AsyncComms\MessageStack.cs" />
+    <Compile Include="BaseClasses\Enumerable.cs" />
+    <Compile Include="BaseClasses\Enumerator.cs" />
+    <Compile Include="BaseClasses\IImplements.cs" />
+    <Compile Include="Controls\GraphMap.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Database\SQLite\SQLite3.cs" />
+    <Compile Include="Database\SQLite\SQLiteConnection.cs" />
+    <Compile Include="Database\SQLite\SQLiteException.cs" />
+    <Compile Include="Database\SQLite\SQLiteFlags.cs" />
+    <Compile Include="Exceptions.cs" />
+    <Compile Include="Geometry\Box2D.cs" />
+    <Compile Include="Geometry\Line2D.cs" />
+    <Compile Include="Geometry\Point2D.cs" />
+    <Compile Include="Network\TCPServer.cs" />
+    <Compile Include="Reports\HTMLLookupTable.cs" />
+    <Compile Include="BaseClasses\GenericEventArgs.cs" />
+    <Compile Include="Collections\Table.cs" />
+    <Compile Include="PluginLoader\PluginDll.cs" />
+    <Compile Include="PluginLoader\PluginProcess.cs" />
+    <Compile Include="SetUtils\Collator.cs" />
+    <Compile Include="SetUtils\Counter.cs" />
+    <Compile Include="SetUtils\OneToManyMap.cs" />
+    <Compile Include="StatisticalModels\NaiveBayesClassifier.cs" />
+    <Compile Include="TypeUtils\InterfaceImplementor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TypeUtils\TypeTools.cs" />
+    <Compile Include="UITools\DragDropTools.cs" />
+    <Compile Include="UITools\CueTools.cs" />
+    <Compile Include="WebSockets\WebSocketConnection.cs" />
+    <Compile Include="WebSockets\WebSocketData.cs" />
+    <Compile Include="WebSockets\WebSocketServer.cs" />
+    <Compile Include="BaseClasses\DelegateTypes.cs" />
+    <Compile Include="BaseClasses\Pair.cs" />
+    <Compile Include="Collections\OneToMany.cs" />
+    <Compile Include="Collections\OneToOne.cs" />
+    <Compile Include="Collections\Set.cs" />
+    <Compile Include="Collections\TwoWayMap.cs" />
+    <Compile Include="Endianness\EndianBitConverter.cs" />
+    <Compile Include="FileAccess\Attributes.cs" />
+    <Compile Include="FileAccess\DisposableStream.cs" />
+    <Compile Include="FileAccess\FormattedReader.cs" />
+    <Compile Include="FileAccess\FormattedWriter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reports\HTMLTable.cs" />
+    <Compile Include="SetUtils\ArrayUtils.cs" />
+    <Compile Include="SetUtils\EnumUtil.cs" />
+    <Compile Include="SetUtils\Number.cs" />
+    <Compile Include="SetUtils\SetUtils.cs" />
+    <Compile Include="StatisticalModels\Expectation.cs" />
+    <Compile Include="StatisticalModels\HiddenMarkovModel.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
