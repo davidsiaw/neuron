@@ -1083,7 +1083,7 @@ namespace DotNumerics.LinearAlgebra
         /// <returns>A matrix that represents the result of the matrix subtraction.</returns>
         public static Matrix operator -(double A, BaseMatrix B)
         {
-            return B.Subtract(A);
+            return B.SubtractFrom(A);
         }
 
         /// <summary>

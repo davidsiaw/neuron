@@ -271,6 +271,15 @@ namespace Neuron
                 // Matrix weight gradients
                 Dictionary<GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>, Matrix> dw = new Dictionary<GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>, Matrix>();
 
+                foreach (var inputVector in inputVectors)
+                {
+                    foreach (var edge in inputVector.Edges)
+                    {
+                        // make space to store the weight gradients
+                        dw[edge.Value] = new Matrix(edge.Value.Data.weights.RowCount, edge.Value.Data.weights.ColumnCount);
+                    }
+                }
+
                 foreach (var trainingCase in trainingData)
                 {
                     double perTrainingSquaredError = 0;
@@ -279,19 +288,13 @@ namespace Neuron
                     // errors in all input vectors
                     Dictionary<string, Matrix> dy = new Dictionary<string, Matrix>();
 
-                    foreach (var inputVector in inputVectors)
-                    {
-                        foreach (var edge in inputVector.Edges)
-                        {
-                            // make space to store the weight gradients
-                            dw[edge.Value] = new Matrix(edge.Value.Data.weights.RowCount, edge.Value.Data.weights.ColumnCount);
-                        }
-                    }
-
                     // set all feature vectors to a training case
                     foreach (var feature in trainingCase)
                     {
-                        vectors[feature.Key].Data.state = feature.Value.state;
+                        if (vectors[feature.Key].Data.layer != LayerType.OUTPUT)
+                        {
+                            vectors[feature.Key].Data.state = feature.Value.state;
+                        }
                     }
 
                     // forward prop
@@ -310,7 +313,7 @@ namespace Neuron
                     // Calculate errors
                     foreach (var output in outputs)
                     {
-                        dy[output.Data.name] = trainingCase[output.Data.name].state - output.Data.state;
+                        dy[output.Data.name] = -(trainingCase[output.Data.name].state - output.Data.state);
                         for (int i = 0; i < output.Data.state.RowCount; i++)
                         {
                             double error = output.Data.state[i, 0];
@@ -362,7 +365,7 @@ namespace Neuron
                 iterationCounter++;
 
                 // repeat until stopped
-                if (iterationCounter == 100)
+                if (iterationCounter == 10000)
                 {
                     break;
                 }
