@@ -29,9 +29,9 @@ TODO
 - add ability to visualize weight matrices
 - perform batch training (large matrix operations) with CUDA/OpenCL
 - add ability to train/pretrain with contrastive divergence
-- add ability
 - add ability to train recurrent neural nets (by forming cycles)
   - add ability to define serial data
   - add ability to visualize network in serial form
   - add ability to visualize initial states
-- add radial basis layer type
+  - add ability to apply serial data from external sources
+- add radial basis and other activation functions
