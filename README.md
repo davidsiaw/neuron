@@ -21,6 +21,7 @@ TODO
 - add softmax layer type
 - add mirror and reflector layers type (for autoencoders)
 - clean up code; detach blueblocks from codebase
+- implement export/import workspace to PMML (http://www.dmg.org/v4-1/NeuralNetwork.html)
 - add automatic regularization
 - add more training controls (learning rate, weight decay, momentum)
 - add visualization for training (training/cross validation error/entropy)
