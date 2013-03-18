@@ -15,6 +15,11 @@ The idea here is to enable fast experimentation of neural networks and
 the effect of different topologies and different initial weights on
 training convergence.
 
+Credits
+===
+I'd like to thank Zimmermann Stephan for his Graph Library which I currently 
+use to display the training progress. (http://www.codeproject.com/Members/zimstep)
+
 TODO
 ====
 - add ability to view actual values of nodes
@@ -23,7 +28,7 @@ TODO
 - clean up code; detach blueblocks from codebase
 - implement export/import workspace to PMML (http://www.dmg.org/v4-1/NeuralNetwork.html)
 - add automatic regularization
-- add more training controls (learning rate, weight decay, momentum)
+- add more training controls (weight decay, momentum)
 - add visualization for training (training/cross validation error/entropy)
 - make manual node update more efficient
 - add ability to define node states with bitmaps/pictures
