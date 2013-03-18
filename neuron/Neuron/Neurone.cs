@@ -244,8 +244,20 @@ namespace Neuron
         Set<GraphMap<FeatureVector, WeightMatrix>.Box> hiddens = new Set<GraphMap<FeatureVector, WeightMatrix>.Box>();
         Set<GraphMap<FeatureVector, WeightMatrix>.Box> inputs = new Set<GraphMap<FeatureVector, WeightMatrix>.Box>();
 
+
+        TrainingForm tf;
+
 		private void btn_train_Click(object sender, EventArgs e) {
 
+            if (tf == null)
+            {
+                tf = new TrainingForm(TrainFor);
+            }
+            tf.Show();
+		}
+
+        private void TrainFor(int iterations, TrainingType type, double learningRate, Action<double> callbackWithError)
+        {
             OneToManyMap<GraphMap<FeatureVector, WeightMatrix>.ILinkable, Pair<GraphMap<FeatureVector, WeightMatrix>.ILinkable, GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>>> backwards;
             Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable> inputVectors;
             Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable> outputVectors;
@@ -261,6 +273,9 @@ namespace Neuron
             }
 
             int iterationCounter = 0;
+
+            double averager = 1.0 / trainingData.Count;
+            double learningrate = learningRate;
 
             // begin training...
             while (true)
@@ -316,7 +331,7 @@ namespace Neuron
                         dy[output.Data.name] = -(trainingCase[output.Data.name].state - output.Data.state);
                         for (int i = 0; i < output.Data.state.RowCount; i++)
                         {
-                            double error = output.Data.state[i, 0];
+                            double error = dy[output.Data.name][i, 0];
                             perTrainingSquaredError += error * error;
                             perTrainingNeuronCount++;
                         }
@@ -341,37 +356,58 @@ namespace Neuron
                             var x = Training.AddBiasTerm(inputVec.Data.state);
                             Training.BackpropLayer(dy[edge.Key.Data.name], x, edge.Value.Data.weights, edge.Key.Data.type, out dHidden, out dWeights);
                             dy[inputVec.Data.name] += Training.RemoveBiasTerm(dHidden);
-                            dw[edge.Value] -= dWeights;
+
+                            if (type == TrainingType.Batch)
+                            {
+                                dw[edge.Value] -= dWeights;
+                            }
+                            else if (type == TrainingType.Online)
+                            {
+                                dw[edge.Value] = -dWeights;
+                            }
+                        }
+                    }
+
+                    // update weights
+                    if (type == TrainingType.Online)
+                    {
+                        foreach (var inputVec in inputVectors)
+                        {
+                            foreach (var edge in inputVec.Edges)
+                            {
+                                edge.Value.Data.weights = (edge.Value.Data.weights + dw[edge.Value] * learningrate);
+                            }
                         }
                     }
                 }
 
-                double averager = 1.0 / trainingData.Count;
-                double learningrate = 1;
 
-                // update weights
-                foreach (var inputVec in inputVectors)
+                if (type == TrainingType.Batch)
                 {
-                    foreach (var edge in inputVec.Edges)
+                    // update weights
+                    foreach (var inputVec in inputVectors)
                     {
-                        edge.Value.Data.weights = (edge.Value.Data.weights + dw[edge.Value] * averager * learningrate);
+                        foreach (var edge in inputVec.Edges)
+                        {
+                            edge.Value.Data.weights = (edge.Value.Data.weights + dw[edge.Value] * averager * learningrate);
+                        }
                     }
                 }
 
                 // calculate total error
                 double totalError = Math.Sqrt(squaredTrainingError) / totalTrainingNeuronCount;
-                Debug.WriteLine(totalError);
+                callbackWithError(totalError);
+                //Debug.WriteLine(totalError);
 
                 iterationCounter++;
 
                 // repeat until stopped
-                if (iterationCounter == 10000)
+                if (iterationCounter == iterations)
                 {
                     break;
                 }
             }
-
-		}
+        }
 
         private void GetGraphOrder(out OneToManyMap<GraphMap<FeatureVector, WeightMatrix>.ILinkable, Pair<GraphMap<FeatureVector, WeightMatrix>.ILinkable, GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>>> backwards, out Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable> inputVectors, out Queue<GraphMap<FeatureVector, WeightMatrix>.ILinkable> outputVectors)
         {

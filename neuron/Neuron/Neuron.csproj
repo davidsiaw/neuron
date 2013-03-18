@@ -79,6 +79,13 @@
     <Compile Include="ProgramStateFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Training.cs" />
+    <Compile Include="TrainingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TrainingForm.Designer.cs">
+      <DependentUpon>TrainingForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TrainingType.cs" />
     <Compile Include="ViewMatrix.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -106,6 +113,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="TrainingForm.resx">
+      <DependentUpon>TrainingForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ViewMatrix.resx">
       <DependentUpon>ViewMatrix.cs</DependentUpon>
     </EmbeddedResource>
@@ -127,6 +137,10 @@
     <ProjectReference Include="..\..\DotNumerics\DotNumerics VS2008.csproj">
       <Project>{48185EF1-B73B-457B-AA37-0BCE567C5AB1}</Project>
       <Name>DotNumerics VS2008</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\GraphLib\GraphLib.csproj">
+      <Project>{0C0A1F4D-1363-4544-A7C5-196C76D26CCA}</Project>
+      <Name>GraphLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
