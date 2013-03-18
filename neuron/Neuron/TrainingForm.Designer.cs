@@ -81,6 +81,7 @@
             0,
             0});
             this.num_iters.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
+            this.num_iters.KeyUp += new System.Windows.Forms.KeyEventHandler(this.num_iters_KeyUp);
             // 
             // btn_onlinetrain
             // 

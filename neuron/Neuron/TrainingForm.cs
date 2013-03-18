@@ -40,6 +40,7 @@ namespace Neuron
             plotterDisplayEx1.DataSources[0].AutoScaleY = true;
             plotterDisplayEx1.DataSources[0].GraphColor = Color.Red;
             plotterDisplayEx1.DataSources[0].SetGridDistanceY(10);
+            plotterDisplayEx1.DataSources[0].Name = "Training Error";
             plotterDisplayEx1.DashedGridColor = Color.Gray;
             plotterDisplayEx1.SolidGridColor = Color.Gray;
             plotterDisplayEx1.SetGridDistanceX(1000);
@@ -47,8 +48,6 @@ namespace Neuron
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
-            btn_batchtrain.Text = "Batch for " + num_iters.Value + " iterations";
-            btn_onlinetrain.Text = "Online for " + num_iters.Value + " iterations";
         }
 
         private void btn_train_Click(object sender, EventArgs e)
@@ -89,7 +88,7 @@ namespace Neuron
         {
 
             plotterDisplayEx1.DataSources[0].Length = error.Count;
-            plotterDisplayEx1.DataSources[0].Samples = error.ToArray();
+            plotterDisplayEx1.DataSources[0].Samples = error;
             plotterDisplayEx1.SetDisplayRangeX(0, error.Count);
 
             Invoke(new Action(() =>
@@ -107,6 +106,12 @@ namespace Neuron
         {
             error = new List<cPoint>();
             UpdateGraph();
+        }
+
+        private void num_iters_KeyUp(object sender, KeyEventArgs e)
+        {
+            btn_batchtrain.Text = "Batch for " + num_iters.Value + " iterations";
+            btn_onlinetrain.Text = "Online for " + num_iters.Value + " iterations";
         }
     }
 }

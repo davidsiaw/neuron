@@ -6,6 +6,7 @@ using System.Data;
 using System.Text;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
+using System.Linq;
 
  /* Copyright (c) 2008,2009 DI Zimmermann Stephan (stefan.zimmermann@tele2.at)
  *   
@@ -244,7 +245,7 @@ namespace GraphLib
                 CurXD0 = XD0;
                 CurXD1 = XD1;
 
-                if (source.AutoScaleX && source.Samples.Length > 0)
+                if (source.AutoScaleX && source.Samples.Count() > 0)
                 {
                     CurXD0 = source.XMin - source.XAutoScaleOffset;
                     CurXD1 = source.XMax + source.XAutoScaleOffset;
@@ -263,7 +264,7 @@ namespace GraphLib
                         float ymax_range = 0;
 
                         int DownSample = source.Downsampling;
-                        cPoint[] data = source.Samples;
+                        IList<cPoint> data = source.Samples;
                         float mult_y = source.CurGraphHeight / source.DY;
                         float mult_x = source.CurGraphWidth / DX;
                         float coff_x = off_X - starting_idx * mult_x;
@@ -273,7 +274,7 @@ namespace GraphLib
                             coff_x = off_X ;
                         }
 
-                        for (int i = 0; i < data.Length - 1; i += DownSample)
+                        for (int i = 0; i < data.Count - 1; i += DownSample)
                         {
                             float x = data[i].x * mult_x + coff_x;
 
@@ -479,9 +480,9 @@ namespace GraphLib
 
                 DX = XD1 - XD0;
 
-                if (source.AutoScaleX && source.Samples.Length > 0)
+                if (source.AutoScaleX && source.Samples.Count > 0)
                 {
-                    DX = source.Samples[source.Samples.Length - 1].x;
+                    DX = source.Samples[source.Samples.Count - 1].x;
                 }
 
                 CurXD0 = XD0;
@@ -499,7 +500,7 @@ namespace GraphLib
                         float ymax_range = 0;
 
                         int DownSample = source.Downsampling;
-                        cPoint[] data = source.Samples;
+                        IList<cPoint> data = source.Samples;
                         float mult_y = source.CurGraphHeight / source.DY;
                         float mult_x = source.CurGraphWidth / DX;
                         float coff_x = off_X - starting_idx * mult_x;
@@ -509,7 +510,7 @@ namespace GraphLib
                             coff_x = off_X;     // avoid dragging in x-autoscale mode
                         }
 
-                        for (int i = 0; i < data.Length - 1; i += DownSample)
+                        for (int i = 0; i < data.Count - 1; i += DownSample)
                         {
                             float x = data[i].x * mult_x + coff_x;
 
@@ -614,7 +615,7 @@ namespace GraphLib
             foreach (DataSource source in sources)
             {
                 if (source.Samples != null &&
-                    source.Samples.Length > 0 &&
+                    source.Samples.Count > 0 &&
                     source.Active == true)
                 {
                     ActiveSources++;
@@ -797,12 +798,12 @@ namespace GraphLib
             if (DX != 0 && source.DY != 0)
             {
                 List<Point> ps = new List<Point>();
-               
-                if (source.Samples != null && source.Samples.Length > 1)
+
+                if (source.Samples != null && source.Samples.Count > 1)
                 {
                    
                     int DownSample = source.Downsampling;
-                    cPoint[] data = source.Samples;
+                    IList<cPoint> data = source.Samples;
                     float mult_y = source.CurGraphHeight / source.DY;
                     float mult_x = source.CurGraphWidth / DX;
                     float coff_x = off_X - starting_idx * mult_x;
@@ -812,7 +813,7 @@ namespace GraphLib
                         coff_x = off_X;     // avoid dragging in x-autoscale mode
                     }
 
-                    for (int i = 0; i < data.Length - 1; i += DownSample)
+                    for (int i = 0; i < data.Count - 1; i += DownSample)
                     {
                         float x = data[i].x  * mult_x   + coff_x;
                         float y = data[i].y  * mult_y + source.off_Y;
@@ -880,9 +881,9 @@ namespace GraphLib
                   
                     if (DX != 0 && source.DY != 0)
                     {
-                        if (source.Samples != null && source.Samples.Length > 1)
+                        if (source.Samples != null && source.Samples.Count > 1)
                         {
-                            cPoint[] data = source.Samples;
+                            IList<cPoint> data = source.Samples;
 
                             float mult_y = source.CurGraphHeight / source.DY;
                             float mult_x = source.CurGraphWidth / DX;

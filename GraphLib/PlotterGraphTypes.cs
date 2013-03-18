@@ -45,7 +45,7 @@ namespace GraphLib
         public OnDrawXAxisLabelEvent OnRenderXAxisLabel = null;
         public OnDrawYAxisLabelEvent OnRenderYAxisLabel = null;
 
-        private cPoint[] samples = null;
+        private IList<cPoint> samples = null;
       
         private int length = 0;
         private String name = String.Empty;
@@ -94,7 +94,7 @@ namespace GraphLib
             }
         }
 
-        public cPoint[] Samples
+        public IList<cPoint> Samples
         {
             get 
             {
@@ -103,7 +103,7 @@ namespace GraphLib
             set 
             {
                 samples = value;
-                length = samples.Length;
+                length = samples.Count;
             }
         }
 
@@ -112,7 +112,7 @@ namespace GraphLib
             get
             {
                 float x_min = float.MaxValue;
-                if (samples.Length > 0)
+                if (samples.Count > 0)
                 {
                     foreach (cPoint p in samples)
                     {
@@ -128,7 +128,7 @@ namespace GraphLib
             get
             {
                 float x_max = float.MinValue;
-                if (samples.Length > 0)
+                if (samples.Count > 0)
                 {
                     foreach (cPoint p in samples)
                     {
@@ -144,7 +144,7 @@ namespace GraphLib
             get
             {
                 float y_min = float.MaxValue;
-                if (samples.Length > 0)
+                if (samples.Count > 0)
                 {
                     foreach (cPoint p in samples)
                     {
@@ -160,7 +160,7 @@ namespace GraphLib
             get
             {
                 float y_max = float.MinValue;
-                if (samples.Length > 0)
+                if (samples.Count > 0)
                 {
                     foreach (cPoint p in samples)
                     {
