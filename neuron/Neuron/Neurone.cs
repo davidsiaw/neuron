@@ -43,7 +43,7 @@ namespace Neuron
                     {
                         if (node.Data.layer != LayerType.INPUT)
                         {
-                            LinkNodes(self, node);
+                            LinkNodes((GraphMap<FeatureVector, WeightMatrix>.ILinkable)self, node);
                             return;
                         }
                     });
@@ -320,7 +320,7 @@ namespace Neuron
                         foreach (var source in sources)
                         {
                             var x = Training.AddBiasTerm(source.a.Data.state);
-                            outputVector.Data.state += (source.b.Data.weights * x);
+                            outputVector.Data.state += ((BaseMatrix)source.b.Data.weights * (BaseMatrix)x);
                         }
                         outputVector.Data.state = outputVector.Data.type.Func(outputVector.Data.state);
                     }
@@ -354,7 +354,10 @@ namespace Neuron
                             Matrix dHidden;
                             Matrix dWeights;
                             var x = Training.AddBiasTerm(inputVec.Data.state);
-                            Training.BackpropLayer(dy[edge.Key.Data.name], x, edge.Value.Data.weights, edge.Key.Data.type, out dHidden, out dWeights);
+							GraphMap<FeatureVector, WeightMatrix>.ILinkable asd;
+							asd = edge.Key;
+							FeatureVector data = asd.Data;
+                            Training.BackpropLayer(dy[data.name], x, edge.Value.Data.weights, data.type, out dHidden, out dWeights);
                             dy[inputVec.Data.name] += Training.RemoveBiasTerm(dHidden);
 
                             if (type == TrainingType.Batch)
@@ -434,12 +437,12 @@ namespace Neuron
                 {
 
                     // add next node to the frontier
-                    queue.Enqueue(edge.Key);
+                    queue.Enqueue((GraphMap<FeatureVector, WeightMatrix>.ILinkable)edge.Key);
 
                     // put this node in the set of outputs
-                    outputPriorities[edge.Key] = outPriority++;
+                    outputPriorities[(GraphMap<FeatureVector, WeightMatrix>.ILinkable)edge.Key] = outPriority++;
 
-                    backwards.Add(edge.Key, new Pair<GraphMap<FeatureVector, WeightMatrix>.ILinkable, GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>>()
+                    backwards.Add((GraphMap<FeatureVector, WeightMatrix>.ILinkable)edge.Key, new Pair<GraphMap<FeatureVector, WeightMatrix>.ILinkable, GraphMap<FeatureVector, WeightMatrix>.Link<WeightMatrix>>()
                     {
                         a = node,
                         b = edge.Value
@@ -489,7 +492,7 @@ namespace Neuron
                 foreach (var inputVector in inputVectors)
                 {
                     var x = Training.AddBiasTerm(inputVector.a.Data.state);
-                    node.Data.state += (inputVector.b.Data.weights * x);
+                    node.Data.state += ((BaseMatrix)inputVector.b.Data.weights * (BaseMatrix)x);
                 }
                 node.Data.state = node.Data.type.Func(node.Data.state);
 
@@ -518,7 +521,7 @@ namespace Neuron
                 var node = queue.Dequeue();
                 foreach (var edge in node.Edges)
                 {
-                    queue.Enqueue(edge.Key);
+                    queue.Enqueue((GraphMap<FeatureVector, WeightMatrix>.ILinkable)edge.Key);
                     edge.Value.Data.weights = (Matrix.Random(edge.Value.Data.weights.RowCount, edge.Value.Data.weights.ColumnCount) - 0.5) * (1.0 / (double)(node.Edges.Count * node.Data.size));
                 }
             }

@@ -44,7 +44,7 @@ namespace Neuron {
 					foreach (var datum in data) {
 						var x = Training.AddBiasTerm(datum.Item1 * 0.001);
 						// forward prop
-						var y = fun.Func(w * x);
+						var y = fun.Func((BaseMatrix)w * (BaseMatrix)x);
 
 						if (y[0, 0] > 0.5) {
 							supposedClass1.Add(new Point((int)datum.Item1[0], (int)datum.Item1[1]));
@@ -57,7 +57,7 @@ namespace Neuron {
 					foreach (var datum in data) {
 						var x = Training.AddBiasTerm(datum.Item1 * 0.001);
 						// forward prop
-						var y = fun.Func(w * x);
+						var y = fun.Func((BaseMatrix)w * (BaseMatrix)x);
 
 						var dy = datum.Item2 - y;
 

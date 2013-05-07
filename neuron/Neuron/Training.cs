@@ -17,16 +17,16 @@ namespace Neuron {
 	public class Training {
 
 		public static void BackpropLayer(Matrix dy, Matrix h, Matrix w, IPerceptronFunc outputfunc, out Matrix dh, out Matrix dw) {
-			Matrix z = w * h;
+			Matrix z = (BaseMatrix)w * (BaseMatrix)h;
 
 			Matrix y = outputfunc.Func(z);
 
 			var dz = outputfunc.GradientAt(y);
 			dz.ElemntsMult(dy);
 
-			dh = w.Transpose() * dz;
+			dh = (BaseMatrix)w.Transpose() * (BaseMatrix)dz;
 
-			dw = dz * h.Transpose();
+			dw = (BaseMatrix)dz * (BaseMatrix)h.Transpose();
 		}
 
 		public static Matrix AddBiasTerm(Matrix x) {
@@ -50,7 +50,7 @@ namespace Neuron {
         }
 
 		public static Matrix ForwardPropLayer(IPerceptronFunc outputfunc, Matrix x, Matrix w) {
-			var z = w * x;
+			var z = (BaseMatrix)w * (BaseMatrix)x;
 			return outputfunc.Func(z);
 		}
 	}

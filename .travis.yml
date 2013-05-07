@@ -1,0 +1,9 @@
+# We use c because there isn't a csharp language supported yet. So this is just a placeholder.
+language: c
+
+before_install:
+  - sudo apt-get install mono-devel mono-gmcs nunit-console
+
+#TODO need to add tests
+script:
+  - xbuild neuron/Neuron.sln
